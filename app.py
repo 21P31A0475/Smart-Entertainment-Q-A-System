@@ -19,21 +19,31 @@ st.set_page_config(
 
 def get_base64(img_path):
     with open(img_path, "rb") as f:
-        data = f.read()
-    return base64.b64encode(data).decode()
+        return base64.b64encode(f.read()).decode()
 
 bg = get_base64("Entertainment Image.png")
 
 st.markdown(f"""
 <style>
 [data-testid="stAppViewContainer"] {{
-    background-image: url("data:image/png;base64,{bg}");
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    background:
+    linear-gradient(rgba(0,0,0,0.70),
+    rgba(0,0,0,0.70)),
+    url("data:image/png;base64,{bg}");
+
+    background-size: contain;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-color: black;
+    min-height: 100vh;
 }}
+
 [data-testid="stHeader"] {{
     background: transparent;
+}}
+
+html, body, [class*="css"] {{
+    overflow-x: hidden;
 }}
 .main {{
     background: rgba(0,0,0,0.75);
@@ -44,7 +54,7 @@ h1, h2, h3, h4, p, label {{
     color: white;
 }}
 .stTextInput > div > div > input {{
-    background-color: rgba(255,255,255,0.9);
+    background-color: rgba(255,255,255,0.92);
     color: black;
     border-radius: 10px;
 }}
@@ -65,7 +75,7 @@ h1, h2, h3, h4, p, label {{
 
 st.markdown("""
 <div style='text-align:center'>
-<img src='https://innomatics.in/wp-content/uploads/2023/01/innomatics-footer-logo.png' width='500'>
+<img src='https://innomatics.in/wp-content/uploads/2023/01/innomatics-footer-logo.png' style="width:500px; max-width:100%;">
 </div>
 """, unsafe_allow_html=True)
 
@@ -76,9 +86,7 @@ st.markdown(
 with open("template.txt") as f:
     template = f.read()
 
-query = st.text_input(
-    "Enter your entertainment mood or preference"
-)
+query = st.text_input("Enter your entertainment mood or preference")
 
 prompt = ChatPromptTemplate.from_messages([
     ("system", template),
@@ -86,7 +94,7 @@ prompt = ChatPromptTemplate.from_messages([
 ])
 
 model = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
+    model="gemini-2.5-flash-lite",
     google_api_key=os.getenv("GEMINI_API_KEY"),
     temperature=0.5
 )
@@ -102,7 +110,7 @@ if st.button("🎬 Recommend"):
         try:          
             response = chain.invoke({"query": query})
             st.markdown("<div class='main'>", unsafe_allow_html=True)
-            st.markdown("## 🔑 Keywords")
+            st.markdown("## Keywords")
             keywords = ", ".join(word.title() for word in response["Keywords"])
             st.write(keywords)
             st.markdown("## 🎥 Recommendations")
@@ -114,8 +122,9 @@ if st.button("🎬 Recommend"):
                 **⭐ Rating:** {rec['Rating']}
                 **📖 Overview:**  
                 {rec['Overview']}
-                **🔥 Why Watch:**  
+                ** Why Watch:**  
                 {rec['Why_Watch']}
+
                 ---
                 """)
             st.markdown("## 🌐 Suggested Links")
